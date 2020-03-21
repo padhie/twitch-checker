@@ -1,3 +1,18 @@
-#index:
-#    path: /
+index:
+    path: /
 #    controller: App\Controller\DefaultController::index
+    controller: App\Controller\IndexController::index
+
+profile:
+    path: /profile
+    controller: App\Controller\ProfileController::index
+profile_check:
+    path: /profile/check
+    controller: App\Controller\ProfileController::check
+
+stream:
+    path: /stream
+    controller: App\Controller\StreamController::index
+stream_check:
+    path: /stream/check
+    controller: App\Controller\StreamController::check
