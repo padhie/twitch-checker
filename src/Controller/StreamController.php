@@ -2,31 +2,27 @@
 
 namespace App\Controller;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use App\Service\TwitchApiWrapper;
+use Padhie\TwitchApiBundle\Exception\UserNotExistsException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use TwitchApiBundle\Exception\UserNotExistsException;
-use TwitchApiBundle\Helper\TwitchApiModelHelper;
-use TwitchApiBundle\Service\TwitchApiService;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class StreamController extends Controller
 {
-    /**
-     * @var TwitchApiService
-     */
-    private $twitchApi;
+    /** @var TwitchApiWrapper */
+    private $twitchApiWrapper;
 
-    public function __construct()
+    public function __construct(TwitchApiWrapper $twitchApiWrapper)
     {
-        // http://twitch-checker.padhie.de/#access_token=twgtu0zf28po214uqppgtqtvl0n75v&scope=channel_read+channel_stream+channel_editor+channel_subscriptions+channel_check_subscription+channel_commercial+user_read+user_follows_edit
-        $this->twitchApi = new TwitchApiService(getenv('TWITCH_CLIENT_ID'), getenv('TWITCH_SECRET'), getenv('TWITCH_REDIRECT_URL'));
-        $this->twitchApi->setOAuth(getenv('TWITCH_ACCESS_TOKEN'));
+        $this->twitchApiWrapper = $twitchApiWrapper;
     }
 
     /**
      * @Route("/stream", name="stream")
      */
-    public function index()
+    public function index(): Response
     {
         return $this->render('stream/index.html.twig', [
             'nav'  => 'stream',
@@ -37,24 +33,23 @@ class StreamController extends Controller
     /**
      * @Route("/stream/check", name="stream_check")
      */
-    public function check(Request $request)
+    public function check(Request $request): Response
     {
         $name = $request->get('user', '');
 
         try {
-            $user = $this->twitchApi->getUserByName($name);
+            $user = $this->twitchApiWrapper->getUserByName($name);
             $channelId = $user->getId();
         } catch (UserNotExistsException $e) {
             $channelId = (int)$name;
         }
 
-        $this->twitchApi->setChannelId($channelId);
-        $stream = $this->twitchApi->getStream();
+        $stream = $this->twitchApiWrapper->getStream($channelId);
 
         return $this->render('stream/stream.html.twig', [
             'nav'    => 'stream',
             'user'   => $stream ? $stream->getChannel()->getName() : $name,
-            'stream' => $stream ? TwitchApiModelHelper::convertToArray($stream) : null,
+            'stream' => $stream ? $stream->jsonSerialize() : null,
         ]);
     }
 }

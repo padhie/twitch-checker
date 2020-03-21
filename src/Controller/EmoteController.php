@@ -2,31 +2,28 @@
 
 namespace App\Controller;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use App\Service\TwitchApiWrapper;
+use Padhie\TwitchApiBundle\Exception\ApiErrorException;
+use Padhie\TwitchApiBundle\Model\TwitchModelInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use TwitchApiBundle\Exception\ApiErrorException;
-use TwitchApiBundle\Helper\TwitchApiModelHelper;
-use TwitchApiBundle\Service\TwitchApiService;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class EmoteController extends Controller
 {
-    /**
-     * @var TwitchApiService
-     */
-    private $twitchApi;
+    /** @var TwitchApiWrapper */
+    private $twitchApiWrapper;
 
-    public function __construct()
+    public function __construct(TwitchApiWrapper $twitchApiWrapper)
     {
-        // http://twitch-checker.padhie.de/#access_token=twgtu0zf28po214uqppgtqtvl0n75v&scope=channel_read+channel_stream+channel_editor+channel_subscriptions+channel_check_subscription+channel_commercial+user_read+user_follows_edit
-        $this->twitchApi = new TwitchApiService(getenv('TWITCH_CLIENT_ID'), getenv('TWITCH_SECRET'), getenv('TWITCH_REDIRECT_URL'));
-        $this->twitchApi->setOAuth(getenv('TWITCH_ACCESS_TOKEN'));
+        $this->twitchApiWrapper = $twitchApiWrapper;
     }
 
     /**
      * @Route("/emotes", name="emotes")
      */
-    public function index()
+    public function index(): Response
     {
         return $this->render('emotes/index.html.twig', [
             'nav'           => 'emotes',
@@ -37,14 +34,14 @@ class EmoteController extends Controller
     /**
      * @Route("/emotes/check", name="emotes_check")
      */
-    public function check(Request $request)
+    public function check(Request $request): Response
     {
         $emoticonSetId = $request->get('emoticonSetId', '');
         $returnEmoticonList = [];
         try {
-            $emoteList = $this->twitchApi->getEmoticonImageListByEmoteiconSets($emoticonSetId);
-            $returnEmoticonList = array_map(function($item) {
-                return TwitchApiModelHelper::convertToArray($item);
+            $emoteList = $this->twitchApiWrapper->getEmoticonImageListByEmoteiconSets($emoticonSetId);
+            $returnEmoticonList = array_map(static function(TwitchModelInterface $item) {
+                return $item->jsonSerialize();
             }, $emoteList);
         } catch (ApiErrorException $e) {
         }
