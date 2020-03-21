@@ -2,31 +2,28 @@
 
 namespace App\Controller;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use App\Service\TwitchApiWrapper;
+use Padhie\TwitchApiBundle\Exception\ApiErrorException;
+use Padhie\TwitchApiBundle\Exception\UserNotExistsException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use TwitchApiBundle\Exception\UserNotExistsException;
-use TwitchApiBundle\Helper\TwitchApiModelHelper;
-use TwitchApiBundle\Service\TwitchApiService;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class FollowingController extends Controller
 {
-    /**
-     * @var TwitchApiService
-     */
-    private $twitchApi;
+    /** @var TwitchApiWrapper */
+    private $twitchApiWrapper;
 
-    public function __construct()
+    public function __construct(TwitchApiWrapper $twitchApiWrapper)
     {
-        // http://twitch-checker.padhie.de/#access_token=twgtu0zf28po214uqppgtqtvl0n75v&scope=channel_read+channel_stream+channel_editor+channel_subscriptions+channel_check_subscription+channel_commercial+user_read+user_follows_edit
-        $this->twitchApi = new TwitchApiService(getenv('TWITCH_CLIENT_ID'), getenv('TWITCH_SECRET'), getenv('TWITCH_REDIRECT_URL'));
-        $this->twitchApi->setOAuth(getenv('TWITCH_ACCESS_TOKEN'));
+        $this->twitchApiWrapper = $twitchApiWrapper;
     }
 
     /**
      * @Route("/following", name="following")
      */
-    public function index()
+    public function index(): Response
     {
         return $this->render('following/index.html.twig', [
             'nav'     => 'following',
@@ -38,39 +35,38 @@ class FollowingController extends Controller
     /**
      * @Route("/following/check", name="following_check")
      */
-    public function check(Request $request)
+    public function check(Request $request): Response
     {
         $user = $request->get('user', '');
         $channel = $request->get('channel', '');
         $following = null;
 
         try {
-            $userData = $this->twitchApi->getUserByName($user);
+            $userData = $this->twitchApiWrapper->getUserByName($user);
             $userId = $userData->getId();
-        } catch (UserNotExistsException $e) {
+        } catch (ApiErrorException|UserNotExistsException $e) {
             $userId = (int)$user;
         }
 
         try {
-            $channelData = $this->twitchApi->getUserByName($channel);
+            $channelData = $this->twitchApiWrapper->getUserByName($channel);
             $channelId = $channelData->getId();
-        } catch (UserNotExistsException $e) {
+        } catch (ApiErrorException|UserNotExistsException $e) {
             $channelId = (int)$channel;
         }
 
-        $this->twitchApi->setUserId($userId)->setChannelId($channelId);
         if ($userId !== 0
             && $channelId !== 0
-            && $this->twitchApi->isUserFollowingChannel()) {
-            $this->twitchApi->setUserId($userId)->setChannelId($channelId)->isUserFollowingChannel();
-            $following = $this->twitchApi->getUserFollowingChannel();
+            && $this->twitchApiWrapper->isUserFollowingChannel($userId, $channelId)) {
+            $this->twitchApiWrapper->isUserFollowingChannel($userId, $channelId);
+            $following = $this->twitchApiWrapper->getUserFollowingChannel();
         }
 
         return $this->render('following/following.html.twig', [
             'nav'       => 'following',
-            'channel'   => $following ? $following->getChannel()->getName() : $channel,
+            'channel'   => $following && $following->getChannel() ? $following->getChannel()->getName() : $channel,
             'user'      => $user,
-            'following' => $following ? TwitchApiModelHelper::convertToArray($following) : null,
+            'following' => $following ? $following->jsonSerialize() : null,
         ]);
     }
 }

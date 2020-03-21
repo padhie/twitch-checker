@@ -5,17 +5,14 @@
         "php": "^7.1.3",
         "ext-iconv": "*",
         "guzzlehttp/guzzle": "^6.3",
-        "padhie/twitch-api-bundle": "^1.0",
+        "padhie/twitch-api-bundle": "^1.1.5",
         "sensio/framework-extra-bundle": "^5.1",
         "symfony/console": "^4.0",
-        "symfony/debug": "^4.0",
         "symfony/flex": "^1.0",
         "symfony/framework-bundle": "^4.0",
         "symfony/lts": "^4@dev",
-        "symfony/maker-bundle": "^1.3",
         "symfony/profiler-pack": "^1.0",
         "symfony/twig-bundle": "^4.0",
-        "symfony/var-dumper": "^4.0",
         "symfony/yaml": "^4.0"
     },
     "require-dev": {
@@ -24,7 +21,10 @@
         "symfony/css-selector": "^4.0",
         "symfony/dotenv": "^4.0",
         "symfony/phpunit-bridge": "^4.0",
-        "symfony/test-pack": "^1.0"
+        "symfony/test-pack": "^1.0",
+        "symfony/debug": "^4.0",
+        "symfony/var-dumper": "^4.0",
+        "symfony/maker-bundle": "^1.3"
     },
     "config": {
         "preferred-install": {
