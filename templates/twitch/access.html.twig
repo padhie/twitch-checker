@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    Sie werden in kürze weitergeleitet.
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        var hash = (window.location.hash).replace('#', '');
+
+        var url = "{{ path('twitch_redirect') }}?" + hash;
+        window.location.href = url;
+    </script>
+{% endblock %}

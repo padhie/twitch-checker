@@ -1,0 +1,28 @@
+image: php:7.2
+
+stages:
+    - build
+    - deploy
+
+build:
+    stage: build
+    script:
+        - cp .env.dist .env
+        - sed -i 's/TWITCH_CLIENT_ID=xxx/TWITCH_CLIENT_ID=abc/g' .env
+        - sed -i 's/TWITCH_SECRET=xxx/TWITCH_SECRET=def/g' .env
+        - sed -i 's/TWITCH_REDIRECT_URL=xxx/TWITCH_REDIRECT_URL=ghi/g' .env
+        - sed -i 's/TWITCH_ACCESS_TOKEN=xxx/TWITCH_ACCESS_TOKEN=jkl/g' .env
+    when: manual
+
+deploy:
+    stage: deploy
+    before_script:
+        - apt-get update -yqq && apt-get upgrade -yqq && apt-get install sshpass -yqq
+    script:
+        - sshpass -p '' ssh
+        - ls -la
+        - zip -r build_zip/webgui.zip build -x var tools
+    except:
+        - develop
+        - master
+    when: manual

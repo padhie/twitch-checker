@@ -1,0 +1,10 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <p>Du hast nicht die Berechtigung für diese Aktion.</p>
+    <p>
+        Versuch doch mal doch mal mit dem Twitch-Login<br />
+        <a href="{{ path('twitch_auth') }}" class="btn btn-primary btn-twitch" role="button">Twitch</a>
+    </p>
+
+{% endblock %}

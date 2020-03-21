@@ -10,10 +10,13 @@ use Padhie\TwitchApiBundle\Model\TwitchFollower;
 use Padhie\TwitchApiBundle\Model\TwitchStream;
 use Padhie\TwitchApiBundle\Model\TwitchUser;
 use Padhie\TwitchApiBundle\Service\TwitchApiService;
+use Symfony\Component\HttpFoundation\Request;
 
 class TwitchApiWrapper
 {
+    public const SESSION_OAUTH_KEY = 'twitchOAuth';
     private const ACCESS_DENIED_EXCEPTION_MESSAGE = 'Unable to access channel subscribers of';
+
     /** @var TwitchApiService */
     private $twitchApi;
 
@@ -21,6 +24,14 @@ class TwitchApiWrapper
     {
         $this->twitchApi = new TwitchApiService(getenv('TWITCH_CLIENT_ID'), getenv('TWITCH_SECRET'), getenv('TWITCH_REDIRECT_URL'));
         $this->twitchApi->setOAuth(getenv('TWITCH_ACCESS_TOKEN'));
+    }
+
+    public function checkAndUseRequestOAuth(Request $request): void
+    {
+        $session = $request->getSession();
+        if ($session && $session->get(self::SESSION_OAUTH_KEY)) {
+            $this->twitchApi->setOAuth($session->get(self::SESSION_OAUTH_KEY));
+        }
     }
 
     public function isAccessException(ApiErrorException $exception): bool

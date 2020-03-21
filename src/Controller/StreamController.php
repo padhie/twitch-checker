@@ -35,6 +35,8 @@ class StreamController extends Controller
      */
     public function check(Request $request): Response
     {
+        $this->twitchApiWrapper->checkAndUseRequestOAuth($request);
+
         $name = $request->get('user', '');
 
         try {

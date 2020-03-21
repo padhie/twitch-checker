@@ -35,6 +35,8 @@ class ProfileController extends Controller
      */
     public function check(Request $request): Response
     {
+        $this->twitchApiWrapper->checkAndUseRequestOAuth($request);
+
         $user = $request->get('user', '');
 
         try {
