@@ -1,0 +1,9 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    {% include "profile/form.html.twig" %}
+
+    <hr>
+
+    <pre>{{ channel|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+{% endblock %}
