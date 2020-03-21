@@ -25,8 +25,6 @@ class SubscriptionController extends Controller
      */
     public function index(): Response
     {
-//        echo $this->twitchApiWrapper->getAccessTokenUrl(TwitchApiService::SCOPE_CHANNEL);
-//        die;
         return $this->render('subscription/index.html.twig', [
             'nav'     => 'subscription',
             'channel' => '',
@@ -39,6 +37,8 @@ class SubscriptionController extends Controller
      */
     public function check(Request $request): Response
     {
+        $this->twitchApiWrapper->checkAndUseRequestOAuth($request);
+
         $channel = $request->get('channel', '');
         $channelId = $channel;
         $subscribe = null;
@@ -53,7 +53,13 @@ class SubscriptionController extends Controller
         }
 
         if ($channelId !== 0) {
-            $subscribe = $this->twitchApiWrapper->getChannelSubscriber($channelId);
+            try {
+                $subscribe = $this->twitchApiWrapper->getChannelSubscriber($channelId);
+            } catch (ApiErrorException $e) {
+                if ($this->twitchApiWrapper->isAccessException($e)) {
+                    return $this->redirectToRoute('twitch_denied');
+                }
+            }
         }
 
         return $this->render('subscription/subscription.html.twig', [

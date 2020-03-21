@@ -1,0 +1,9 @@
+.btn.btn-twitch,
+.btn.btn-twitch:active,
+.btn.btn-twitch:focus,
+.btn.btn-twitch:hover {
+    border-color: #6441a5;
+    background-color: #6441a5;
+    background-image: linear-gradient(to bottom,#6441a5 0,#6441a5 100%);
+    color: white;
+}
