@@ -29,7 +29,7 @@ class ApiController extends Controller
      */
     public function online(Request $request): Response
     {
-        if ($this->apiService->check($request->get('apiKey'))) {
+        if (!$this->apiService->checkByRequest($request)) {
             throw $this->createAccessDeniedException();
         }
 
