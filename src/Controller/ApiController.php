@@ -58,6 +58,8 @@ class ApiController extends Controller
         } catch (UserNotExistsException $e) {
         }
 
-        return new JsonResponse($streams);
+        return new JsonResponse([
+            'streams' => $streams,
+        ]);
     }
 }
