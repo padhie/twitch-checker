@@ -50,9 +50,12 @@ class ApiController extends Controller
 
                 $streams[] = [
                     'userId' => $channelId,
-                    'username' => $name,
+                    'username' => $stream->getChannel()->getName(),
+                    'displayName' => $stream->getChannel()->getDisplayName(),
                     'url' => $stream->getChannel()->getUrl(),
                     'profileImageURL' => $stream->getChannel()->getLogo(),
+                    'title' => $stream->getChannel()->getStatus(),
+                    'game' => $stream->getChannel()->getGame(),
                 ];
             }
         } catch (UserNotExistsException $e) {
