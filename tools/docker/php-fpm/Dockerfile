@@ -1,4 +1,4 @@
-FROM php:7.2-fpm
+FROM php:7.4-fpm
 WORKDIR "/application"
 
 RUN docker-php-ext-install -j$(nproc) mysqli
