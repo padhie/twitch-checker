@@ -12,12 +12,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SubscriptionController extends Controller
 {
-    /** @var TwitchApiWrapper */
-    private $twitchApiWrapper;
-
-    public function __construct(TwitchApiWrapper $twitchApiWrapper)
+    public function __construct(private readonly TwitchApiWrapper $twitchApiWrapper)
     {
-        $this->twitchApiWrapper = $twitchApiWrapper;
     }
 
     /**
@@ -47,7 +43,7 @@ class SubscriptionController extends Controller
             try {
                 $channelData = $this->twitchApiWrapper->getUserByName($channel);
                 $channelId = $channelData->getId();
-            } catch (ApiErrorException|UserNotExistsException $e) {
+            } catch (ApiErrorException|UserNotExistsException) {
                 $channelId = 0;
             }
         }
@@ -65,7 +61,7 @@ class SubscriptionController extends Controller
         return $this->render('subscription/subscription.html.twig', [
             'nav'       => 'subscription',
             'channel'   => $channel,
-            'subscribe' => $subscribe ? $subscribe->jsonSerialize() : null,
+            'subscribe' => $subscribe !== null ? $subscribe->jsonSerialize() : null,
         ]);
     }
 }

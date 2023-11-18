@@ -12,12 +12,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class FollowingController extends Controller
 {
-    /** @var TwitchApiWrapper */
-    private $twitchApiWrapper;
-
-    public function __construct(TwitchApiWrapper $twitchApiWrapper)
+    public function __construct(private readonly TwitchApiWrapper $twitchApiWrapper)
     {
-        $this->twitchApiWrapper = $twitchApiWrapper;
     }
 
     /**
@@ -53,22 +49,22 @@ class FollowingController extends Controller
         try {
             $channelData = $this->twitchApiWrapper->getUserByName($channel);
             $channelId = $channelData->getId();
-        } catch (ApiErrorException|UserNotExistsException $e) {
+        } catch (ApiErrorException|UserNotExistsException) {
             $channelId = (int)$channel;
         }
 
         if ($userId !== 0
             && $channelId !== 0
-            && $this->twitchApiWrapper->isUserFollowingChannel($userId, $channelId)) {
-            $this->twitchApiWrapper->isUserFollowingChannel($userId, $channelId);
-            $following = $this->twitchApiWrapper->getUserFollowingChannel();
+            && $this->twitchApiWrapper->isUserFollowingChannel($userId, $channelId)
+        ) {
+            $following = $this->twitchApiWrapper->getUserFollowingChannel($userId, $channelId);
         }
 
         return $this->render('following/following.html.twig', [
             'nav'       => 'following',
-            'channel'   => $following && $following->getChannel() ? $following->getChannel()->getName() : $channel,
+            'channel'   => $following->getFromName(),
             'user'      => $user,
-            'following' => $following ? $following->jsonSerialize() : null,
+            'following' => $following !== null ? $following->jsonSerialize() : null,
         ]);
     }
 }

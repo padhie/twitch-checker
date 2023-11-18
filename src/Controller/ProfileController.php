@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Service\TwitchApiWrapper;
-use Padhie\TwitchApiBundle\Exception\UserNotExistsException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,12 +10,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ProfileController extends Controller
 {
-    /** @var TwitchApiWrapper */
-    private $twitchApiWrapper;
-
-    public function __construct(TwitchApiWrapper $twitchApiWrapper)
+    public function __construct(private readonly TwitchApiWrapper $twitchApiWrapper)
     {
-        $this->twitchApiWrapper = $twitchApiWrapper;
     }
 
     /**
@@ -37,20 +32,12 @@ class ProfileController extends Controller
     {
         $this->twitchApiWrapper->checkAndUseRequestOAuth($request);
 
-        $user = $request->get('user', '');
-
-        try {
-            $user = $this->twitchApiWrapper->getUserByName($user);
-            $channelId = $user->getId();
-        } catch (UserNotExistsException $e) {
-            $channelId = (int)$user;
-        }
-
-        $user = $this->twitchApiWrapper->getChannelById($channelId);
+        $userName = $request->get('user', '');
+        $user = $this->twitchApiWrapper->getUserByName($userName);
 
         return $this->render('profile/profile.html.twig', [
             'nav'     => 'profile',
-            'user'    => $user->getName(),
+            'user'    => $user->getDisplayName(),
             'channel' => $user->jsonSerialize(),
         ]);
     }

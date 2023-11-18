@@ -12,12 +12,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class EmoteController extends Controller
 {
-    /** @var TwitchApiWrapper */
-    private $twitchApiWrapper;
-
-    public function __construct(TwitchApiWrapper $twitchApiWrapper)
+    public function __construct(private readonly TwitchApiWrapper $twitchApiWrapper)
     {
-        $this->twitchApiWrapper = $twitchApiWrapper;
     }
 
     /**
@@ -42,10 +38,8 @@ class EmoteController extends Controller
         $returnEmoticonList = [];
         try {
             $emoteList = $this->twitchApiWrapper->getEmoticonImageListByEmoteiconSets($emoticonSetId);
-            $returnEmoticonList = array_map(static function(TwitchModelInterface $item) {
-                return $item->jsonSerialize();
-            }, $emoteList);
-        } catch (ApiErrorException $e) {
+            $returnEmoticonList = array_map(static fn(TwitchModelInterface $item) => $item->jsonSerialize(), $emoteList);
+        } catch (ApiErrorException) {
         }
 
         return $this->render('emotes/emotes.html.twig', [

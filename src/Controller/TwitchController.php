@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Service\TwitchApiWrapper;
-use Padhie\TwitchApiBundle\Service\TwitchApiService;
+use Padhie\TwitchApiBundle\TwitchAuthenticator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,12 +12,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class TwitchController extends Controller
 {
-    /** @var TwitchApiWrapper */
-    private $twitchApiWrapper;
-
-    public function __construct(TwitchApiWrapper $twitchApiWrapper)
+    public function __construct(private readonly TwitchApiWrapper $twitchApiWrapper)
     {
-        $this->twitchApiWrapper = $twitchApiWrapper;
     }
 
     /**
@@ -38,7 +34,7 @@ class TwitchController extends Controller
     public function getAuth(): Response
     {
         return $this->redirect(
-            $this->twitchApiWrapper->getAccessTokenUrl(TwitchApiService::SCOPE_CHANNEL)
+            $this->twitchApiWrapper->getAccessTokenUrl(TwitchAuthenticator::SCOPE_CHANNEL)
         );
     }
 

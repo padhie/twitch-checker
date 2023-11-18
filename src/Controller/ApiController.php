@@ -13,15 +13,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ApiController extends Controller
 {
-    /** @var ApiService */
-    private $apiService;
-    /** @var TwitchApiWrapper */
-    private $twitchApiWrapper;
-
-    public function __construct(ApiService $apiService, TwitchApiWrapper $twitchApiWrapper)
+    public function __construct(private readonly ApiService $apiService, private readonly TwitchApiWrapper $twitchApiWrapper)
     {
-        $this->apiService = $apiService;
-        $this->twitchApiWrapper = $twitchApiWrapper;
     }
 
     /**
@@ -34,7 +27,7 @@ class ApiController extends Controller
         }
 
         $this->twitchApiWrapper->checkAndUseRequestOAuth($request);
-        $names = explode(',', $request->get('users', ''));
+        $names = explode(',', (string) $request->get('users', ''));
 
         $streams = [];
         try {
@@ -44,21 +37,21 @@ class ApiController extends Controller
                 $channelId = $user->getId();
                 $stream = $this->twitchApiWrapper->getStream($channelId);
 
-                if (!$stream) {
+                if ($stream === null) {
                     continue;
                 }
 
                 $streams[] = [
                     'userId' => $channelId,
-                    'username' => $stream->getChannel()->getName(),
-                    'displayName' => $stream->getChannel()->getDisplayName(),
-                    'url' => $stream->getChannel()->getUrl(),
-                    'profileImageURL' => $stream->getChannel()->getLogo(),
-                    'title' => $stream->getChannel()->getStatus(),
-                    'game' => $stream->getChannel()->getGame(),
+                    'username' => $user->getLogin(),
+                    'displayName' => $user->getDisplayName(),
+                    'url' => sprintf('https://twitch.tv/%s', $user->getLogin()),
+                    'profileImageURL' => $user->getProfileImageUrl(),
+                    'title' => $stream->getTitle(),
+                    'game' => $stream->getGameName(),
                 ];
             }
-        } catch (UserNotExistsException $e) {
+        } catch (UserNotExistsException) {
         }
 
         return new JsonResponse([

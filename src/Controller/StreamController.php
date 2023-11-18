@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\TwitchApiWrapper;
+use Padhie\TwitchApiBundle\Exception\ApiErrorException;
 use Padhie\TwitchApiBundle\Exception\UserNotExistsException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,12 +12,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class StreamController extends Controller
 {
-    /** @var TwitchApiWrapper */
-    private $twitchApiWrapper;
-
-    public function __construct(TwitchApiWrapper $twitchApiWrapper)
+    public function __construct(private readonly TwitchApiWrapper $twitchApiWrapper)
     {
-        $this->twitchApiWrapper = $twitchApiWrapper;
     }
 
     /**
@@ -38,20 +35,23 @@ class StreamController extends Controller
         $this->twitchApiWrapper->checkAndUseRequestOAuth($request);
 
         $name = $request->get('user', '');
+        $user = $stream = null;
 
         try {
             $user = $this->twitchApiWrapper->getUserByName($name);
-            $channelId = $user->getId();
-        } catch (UserNotExistsException $e) {
-            $channelId = (int)$name;
+        } catch (UserNotExistsException | ApiErrorException) {
+            // do nothing
         }
 
-        $stream = $this->twitchApiWrapper->getStream($channelId);
+        if ($user !== null) {
+            $channelId = $user->getId();
+            $stream = $this->twitchApiWrapper->getStream($channelId);
+        }
 
         return $this->render('stream/stream.html.twig', [
             'nav'    => 'stream',
-            'user'   => $stream ? $stream->getChannel()->getName() : $name,
-            'stream' => $stream ? $stream->jsonSerialize() : null,
+            'user'   => $user?->getDisplayName(),
+            'stream' => $stream?->jsonSerialize(),
         ]);
     }
 }
