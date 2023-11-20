@@ -534,7 +534,7 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:padhie/sso-client.git",
-                "reference": "39526fc5f57443a3a2877ee456826f065740e936"
+                "reference": "c879cbd64933968eb06697e8045b1ab608018a52"
             },
             "require": {
                 "guzzlehttp/guzzle": "^7.8",
@@ -557,7 +557,7 @@
                     "email": "admin@padhie.de"
                 }
             ],
-            "time": "2023-11-18T17:10:42+00:00"
+            "time": "2023-11-18T18:50:10+00:00"
         },
         {
             "name": "padhie/twitch-api-bundle",

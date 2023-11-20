@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Service\TwitchApiWrapper;
+use Padhie\TwitchApiBundle\Exception\ApiErrorException;
+use Padhie\TwitchApiBundle\Exception\UserNotExistsException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,7 +35,11 @@ class ProfileController extends Controller
         $this->twitchApiWrapper->checkAndUseRequestOAuth($request);
 
         $userName = $request->get('user', '');
-        $user = $this->twitchApiWrapper->getUserByName($userName);
+        try {
+            $user = $this->twitchApiWrapper->getUserByName($userName);
+        } catch (UserNotExistsException | ApiErrorException) {
+            return $this->redirectToRoute('profile');
+        }
 
         return $this->render('profile/profile.html.twig', [
             'nav'     => 'profile',
